@@ -18,7 +18,7 @@ import {
   Heading
 } from '@chakra-ui/react';
 import { Plus, Menu as HamburgerIcon } from 'react-feather';
-import { RiStore2Line } from 'react-icons/ri';
+import { RiStore2Line, RiSettings2Line } from 'react-icons/ri';
 import { MdCollections } from 'react-icons/md';
 import headerLogo from './assets/header-logo.svg';
 import { useSelector, useDispatch } from '../../reducer';
@@ -26,6 +26,7 @@ import { connectWallet, disconnectWallet } from '../../reducer/async/wallet';
 import { MinterButton } from '.';
 import logo from './assets/splash-logo.svg';
 import wallet_icon from './assets/wallet.svg';
+import { SetUpNetworkModal } from './modals/SetUpNetworkModal';
 
 interface MobileHeaderLinkProps {
   to: string;
@@ -63,7 +64,8 @@ function MobileHeaderLink(props: MobileHeaderLinkProps) {
 }
 
 interface DesktopHeaderLinkProps {
-  to: string;
+  to?: string;
+  onClick?: () => void;
   children: React.ReactNode;
 }
 
@@ -75,7 +77,8 @@ function DesktopHeaderLink(props: DesktopHeaderLinkProps) {
       href={props.to}
       onClick={e => {
         e.preventDefault();
-        setLocation(props.to);
+        props.to && setLocation(props.to);
+        props.onClick && props.onClick();
       }}
       textDecor="none"
       borderRadius="10px"
@@ -177,6 +180,11 @@ function NavItems() {
   const dispatch = useDispatch();
   const [, setLocation] = useLocation();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const {
+    isOpen: isOpenSetUpNetModal,
+    onOpen: onOpenSetUpNetModal,
+    onClose: onCloseSetUpNetModal,
+  } = useDisclosure();
   const btnRef = useRef(null);
 
   return (
@@ -270,6 +278,15 @@ function NavItems() {
           md: 'flex'
         }}
       >
+        <DesktopHeaderLink
+          onClick={onOpenSetUpNetModal}
+        >
+          <Box color="brand.turquoise">
+            <RiSettings2Line size={16} />
+          </Box>
+          <Text ml={2}>Set Up Network</Text>
+        </DesktopHeaderLink>
+
         <DesktopHeaderLink to="/marketplace">
           <Box color="brand.turquoise">
             <RiStore2Line size={16} />
@@ -303,6 +320,11 @@ function NavItems() {
           <WalletDisplay />
         </Flex>
       </Flex>
+
+      <SetUpNetworkModal
+        isOpen={isOpenSetUpNetModal}
+        close={onCloseSetUpNetModal}
+      />
     </>
   );
 }

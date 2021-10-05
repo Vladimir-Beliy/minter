@@ -7,7 +7,11 @@ import {
   reconnectWallet
 } from '../async/wallet';
 
-const initialState = Minter.connectToolkit(Minter.configure(config)) as
+const configFromLS = window.localStorage.getItem('networkConfig');
+
+const initialState = Minter.connectToolkit(Minter.configure(
+  configFromLS ? JSON.parse(configFromLS) : config
+)) as
   | SystemWithToolkit
   | SystemWithWallet;
 

@@ -140,6 +140,9 @@ export async function getContractNfts(
 
         // TODO: Write decoder function for data retrieval
         const decodedInfo = _.mapValues(tokenInfo, fromHexString) as any;
+
+        decodedInfo[''] = decodedInfo[''].replace(/"/g, '');
+
         const resolvedInfo = await system.resolveMetadata(
           decodedInfo[''],
           address
