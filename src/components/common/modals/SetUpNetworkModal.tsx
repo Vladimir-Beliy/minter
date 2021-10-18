@@ -1,4 +1,4 @@
-import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, Box, Button, ModalBody, ModalFooter, FormControl, FormLabel, Input } from '@chakra-ui/react';
+import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, Button, ModalBody, ModalFooter, FormControl, FormLabel, Input, FormErrorMessage } from '@chakra-ui/react';
 import React, { FC, useState } from 'react';
 import { useSelector } from '../../../reducer';
 import config from '../../../config.json';
@@ -20,6 +20,9 @@ export const SetUpNetworkModal: FC<Props> = (props) => {
   const [faucet, setFaucet] = useState(globalConfig.contracts.nftFaucet);
   const [marketplace, setMarketplace] = useState(globalConfig.contracts.marketplace.fixedPrice.tez);
 
+  const [faucetError, setFaucetError] = useState<string | null>(null);
+  const [marketplaceError, setMarketplaceError] = useState<string | null>(null);
+
   const onSubmit = () => {
     const newConfig: Config = {
       ...config,
@@ -33,15 +36,33 @@ export const SetUpNetworkModal: FC<Props> = (props) => {
       }
     }
 
-    window.localStorage.setItem('networkConfig', JSON.stringify(newConfig));
-    window.location.reload();
-    close();
+    if (!(faucetError || marketplaceError)) {
+      window.localStorage.setItem('networkConfig', JSON.stringify(newConfig));
+      window.location.reload();
+      close();
+    }
   }
 
   const onReset = () => {
     window.localStorage.setItem('networkConfig', JSON.stringify(config));
     window.location.reload();
     close();
+  }
+
+  const validate = (value: string, errorSetter: (value: string | null) => void) => {
+    let error = null;
+
+    if (!value) {
+      error = 'value is required';
+    } else if (/\W/g.test(value)) {
+      error = 'value should contain only letters and numbers';
+    } else if (!(value.slice(0, 3) === 'KT1')) {
+      error = 'value must start with "KT1"';
+    } else if (!(value.length === 36)) {
+      error = 'value must contain 36 characters';
+    }
+
+    errorSetter(error);
   }
 
   return (
@@ -63,22 +84,28 @@ export const SetUpNetworkModal: FC<Props> = (props) => {
           onSubmit();
         }}>
           <ModalBody>
-            <FormControl paddingBottom={6} isRequired>
+            <FormControl paddingBottom={6} isRequired isInvalid={!!faucetError}>
               <FormLabel fontFamily="mono">NFT Faucet</FormLabel>
 
               <Input
                 value={faucet}
                 onChange={(e) => setFaucet(e.target.value)}
+                onBlur={(e) => validate(e.target.value, setFaucetError)}
               />
+
+              <FormErrorMessage>{faucetError}</FormErrorMessage>
             </FormControl>
 
-            <FormControl paddingBottom={6} isRequired>
+            <FormControl paddingBottom={6} isRequired isInvalid={!!marketplaceError}>
               <FormLabel fontFamily="mono">Marketplace</FormLabel>
 
               <Input
                 value={marketplace}
                 onChange={(e) => setMarketplace(e.target.value)}
+                onBlur={(e) => validate(e.target.value, setMarketplaceError)}
               />
+
+              <FormErrorMessage>{marketplaceError}</FormErrorMessage>
             </FormControl>
           </ModalBody>
 
